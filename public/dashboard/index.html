@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp Bot - Admin Dashboard</title>
+    <link rel="stylesheet" href="/dashboard/css/style.css">
+</head>
+
+<body>
+    <!-- Login Screen -->
+    <div id="loginScreen" class="login-container">
+        <div class="login-box">
+            <h1>🤖 WhatsApp Bot Admin</h1>
+            <p>Order Tracking & Broadcast Management</p>
+            <form id="loginForm">
+                <div class="form-group">
+                    <input type="text" id="username" placeholder="Username" required>
+                </div>
+                <div class="form-group">
+                    <input type="password" id="password" placeholder="Password" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Login</button>
+                <div id="loginError" class="error-message"></div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Dashboard Screen -->
+    <div id="dashboardScreen" class="dashboard-container" style="display: none;">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>🤖 Bot Admin</h2>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item active" data-page="overview">
+                    <span>📊</span> Overview
+                </a>
+                <a href="#" class="nav-item" data-page="customers">
+                    <span>👥</span> Customers
+                </a>
+                <a href="#" class="nav-item" data-page="broadcast">
+                    <span>📢</span> Broadcast
+                </a>
+                <a href="#" class="nav-item" data-page="offers">
+                    <span>🎁</span> Offers
+                </a>
+                <a href="#" class="nav-item" data-page="messages">
+                    <span>💬</span> Messages
+                </a>
+                <a href="#" class="nav-item" data-page="analytics">
+                    <span>📈</span> Analytics
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <button id="logoutBtn" class="btn btn-secondary">Logout</button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-bar">
+                <h1 id="pageTitle">Dashboard Overview</h1>
+                <div class="user-info">
+                    <span id="adminUsername">Admin</span>
+                </div>
+            </header>
+
+            <div class="content-area">
+                <!-- Overview Page -->
+                <div id="overviewPage" class="page active">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon">👥</div>
+                            <div class="stat-info">
+                                <h3 id="totalCustomers">0</h3>
+                                <p>Total Customers</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">📦</div>
+                            <div class="stat-info">
+                                <h3 id="totalOrders">0</h3>
+                                <p>Total Orders</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">💬</div>
+                            <div class="stat-info">
+                                <h3 id="totalMessages">0</h3>
+                                <p>Total Messages</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">📨</div>
+                            <div class="stat-info">
+                                <h3 id="todayMessages">0</h3>
+                                <p>Today's Messages</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section">
+                        <h2>Recent Broadcasts</h2>
+                        <div id="recentBroadcasts" class="broadcasts-list">
+                            <p class="empty-state">No broadcasts yet</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Customers Page -->
+                <div id="customersPage" class="page">
+                    <div class="page-header">
+                        <h2>Customer List</h2>
+                        <button class="btn btn-primary" onclick="refreshCustomers()">Refresh</button>
+                    </div>
+                    <div id="customersList" class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Phone</th>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Joined</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="customersTableBody">
+                                <tr>
+                                    <td colspan="5" class="empty-state">Loading...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Broadcast Page -->
+                <div id="broadcastPage" class="page">
+                    <div class="broadcast-form">
+                        <h2>Send Broadcast Message</h2>
+                        <form id="broadcastForm">
+                            <div class="form-group">
+                                <label>Target Audience</label>
+                                <select id="broadcastSegment">
+                                    <option value="all">All Customers</option>
+                                    <option value="recent">Recent Customers (30 days)</option>
+                                    <option value="with_orders">Customers with Orders</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Message</label>
+                                <textarea id="broadcastMessage" rows="6" placeholder="Enter your message..."
+                                    required></textarea>
+                                <small>Character count: <span id="charCount">0</span></small>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Send Broadcast</button>
+                        </form>
+                        <div id="broadcastStatus" class="status-message"></div>
+                    </div>
+                </div>
+
+                <!-- Offers Page -->
+                <div id="offersPage" class="page">
+                    <div class="offers-form">
+                        <h2>Create & Send Offer</h2>
+                        <form id="offerForm">
+                            <div class="form-group">
+                                <label>Offer Title</label>
+                                <input type="text" id="offerTitle" placeholder="e.g., Summer Sale 50% OFF" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Description</label>
+                                <textarea id="offerDescription" rows="3" placeholder="Offer details..."></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>Discount Code (Optional)</label>
+                                <input type="text" id="offerCode" placeholder="e.g., SUMMER50">
+                            </div>
+                            <div class="form-group">
+                                <label>WhatsApp Message</label>
+                                <textarea id="offerMessage" rows="5" placeholder="Message to send to customers..."
+                                    required></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>Expires At (Optional)</label>
+                                <input type="datetime-local" id="offerExpiry">
+                            </div>
+                            <button type="submit" class="btn btn-primary">Create & Send Offer</button>
+                        </form>
+                        <div id="offerStatus" class="status-message"></div>
+                    </div>
+                </div>
+
+                <!-- Messages Page -->
+                <div id="messagesPage" class="page">
+                    <div class="page-header">
+                        <h2>Message History</h2>
+                        <button class="btn btn-primary" onclick="refreshMessages()">Refresh</button>
+                    </div>
+                    <div id="messagesList" class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Time</th>
+                                    <th>Phone</th>
+                                    <th>Type</th>
+                                    <th>Message</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="messagesTableBody">
+                                <tr>
+                                    <td colspan="5" class="empty-state">Loading...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Analytics Page -->
+                <div id="analyticsPage" class="page">
+                    <h2>Analytics & Insights</h2>
+                    <div class="analytics-grid">
+                        <div class="analytics-card">
+                            <h3>Messages by Type</h3>
+                            <div id="messagesByType" class="chart-placeholder">Loading...</div>
+                        </div>
+                        <div class="analytics-card">
+                            <h3>Orders by Status</h3>
+                            <div id="ordersByStatus" class="chart-placeholder">Loading...</div>
+                        </div>
+                        <div class="analytics-card full-width">
+                            <h3>Messages Over Time (Last 7 Days)</h3>
+                            <div id="messagesOverTime" class="chart-placeholder">Loading...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="/dashboard/js/main.js"></script>
+</body>
+
+</html>
