@@ -4,24 +4,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WhatsApp Bot - Admin Dashboard</title>
+    <title>OffComfrt Bot - Admin Dashboard</title>
     <link rel="stylesheet" href="/dashboard/css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 
 <body>
     <!-- Login Screen -->
     <div id="loginScreen" class="login-container">
         <div class="login-box">
-            <h1>🤖 WhatsApp Bot Admin</h1>
-            <p>Order Tracking & Broadcast Management</p>
+            <h1>OffComfrt Bot Admin</h1>
+            <p>WhatsApp Business Management</p>
             <form id="loginForm">
                 <div class="form-group">
-                    <input type="text" id="username" placeholder="Username" required>
+                    <input type="text" id="username" placeholder="Username" required autocomplete="username">
                 </div>
                 <div class="form-group">
-                    <input type="password" id="password" placeholder="Password" required>
+                    <input type="password" id="password" placeholder="Password" required
+                        autocomplete="current-password">
                 </div>
-                <button type="submit" class="btn btn-primary">Login</button>
+                <button type="submit" class="btn btn-primary">
+                    <span id="loginButtonText">Sign In</span>
+                    <span id="loginLoader" class="loading" style="display: none;"></span>
+                </button>
                 <div id="loginError" class="error-message"></div>
             </form>
         </div>
@@ -32,7 +39,7 @@
         <!-- Sidebar -->
         <aside class="sidebar">
             <div class="sidebar-header">
-                <h2>🤖 Bot Admin</h2>
+                <h2>OffComfrt Bot</h2>
             </div>
             <nav class="sidebar-nav">
                 <a href="#" class="nav-item active" data-page="overview">
@@ -41,199 +48,346 @@
                 <a href="#" class="nav-item" data-page="customers">
                     <span>👥</span> Customers
                 </a>
-                <a href="#" class="nav-item" data-page="broadcast">
-                    <span>📢</span> Broadcast
-                </a>
-                <a href="#" class="nav-item" data-page="offers">
-                    <span>🎁</span> Offers
+                <a href="#" class="nav-item" data-page="orders">
+                    <span>📦</span> Orders
                 </a>
                 <a href="#" class="nav-item" data-page="messages">
                     <span>💬</span> Messages
+                </a>
+                <a href="#" class="nav-item" data-page="broadcast">
+                    <span>📢</span> Broadcast
                 </a>
                 <a href="#" class="nav-item" data-page="analytics">
                     <span>📈</span> Analytics
                 </a>
             </nav>
             <div class="sidebar-footer">
-                <button id="logoutBtn" class="btn btn-secondary">Logout</button>
+                <button id="logoutBtn" class="btn btn-secondary" style="width: 100%;">
+                    <span>🚪</span> Logout
+                </button>
             </div>
         </aside>
 
         <!-- Main Content -->
         <main class="main-content">
-            <header class="top-bar">
-                <h1 id="pageTitle">Dashboard Overview</h1>
-                <div class="user-info">
-                    <span id="adminUsername">Admin</span>
+            <!-- Header -->
+            <header class="dashboard-header">
+                <div class="header-title">
+                    <h1 id="pageTitle">Overview</h1>
+                    <p id="pageSubtitle">WhatsApp Bot Performance Dashboard</p>
+                </div>
+                <div class="header-actions">
+                    <button id="refreshBtn" class="btn btn-secondary">
+                        <span>🔄</span> Refresh
+                    </button>
                 </div>
             </header>
 
+            <!-- Content Area -->
             <div class="content-area">
                 <!-- Overview Page -->
-                <div id="overviewPage" class="page active">
+                <div id="overviewPage" class="page-section active">
+                    <!-- Statistics Cards -->
                     <div class="stats-grid">
                         <div class="stat-card">
-                            <div class="stat-icon">👥</div>
-                            <div class="stat-info">
-                                <h3 id="totalCustomers">0</h3>
-                                <p>Total Customers</p>
+                            <div class="stat-header">
+                                <div>
+                                    <div class="stat-label">Total Customers</div>
+                                    <div class="stat-value" id="totalCustomers">-</div>
+                                    <div class="stat-change positive" id="customersChange">
+                                        <span>↑</span> Loading...
+                                    </div>
+                                </div>
+                                <div class="stat-icon primary">👥</div>
                             </div>
                         </div>
+
                         <div class="stat-card">
-                            <div class="stat-icon">📦</div>
-                            <div class="stat-info">
-                                <h3 id="totalOrders">0</h3>
-                                <p>Total Orders</p>
+                            <div class="stat-header">
+                                <div>
+                                    <div class="stat-label">Total Orders</div>
+                                    <div class="stat-value" id="totalOrders">-</div>
+                                    <div class="stat-change positive" id="ordersChange">
+                                        <span>↑</span> Loading...
+                                    </div>
+                                </div>
+                                <div class="stat-icon success">📦</div>
                             </div>
                         </div>
+
                         <div class="stat-card">
-                            <div class="stat-icon">💬</div>
-                            <div class="stat-info">
-                                <h3 id="totalMessages">0</h3>
-                                <p>Total Messages</p>
+                            <div class="stat-header">
+                                <div>
+                                    <div class="stat-label">Total Messages</div>
+                                    <div class="stat-value" id="totalMessages">-</div>
+                                    <div class="stat-change positive" id="messagesChange">
+                                        <span>↑</span> Loading...
+                                    </div>
+                                </div>
+                                <div class="stat-icon info">💬</div>
                             </div>
                         </div>
+
                         <div class="stat-card">
-                            <div class="stat-icon">📨</div>
-                            <div class="stat-info">
-                                <h3 id="todayMessages">0</h3>
-                                <p>Today's Messages</p>
+                            <div class="stat-header">
+                                <div>
+                                    <div class="stat-label">Active Today</div>
+                                    <div class="stat-value" id="activeToday">-</div>
+                                    <div class="stat-change" id="activeChange">
+                                        <span>→</span> Loading...
+                                    </div>
+                                </div>
+                                <div class="stat-icon warning">⚡</div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="section">
-                        <h2>Recent Broadcasts</h2>
-                        <div id="recentBroadcasts" class="broadcasts-list">
-                            <p class="empty-state">No broadcasts yet</p>
+                    <!-- Charts Row -->
+                    <div
+                        style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 24px; margin-bottom: 24px;">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">Message Volume (7 Days)</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="chart-container">
+                                    <canvas id="messageChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">Order Status Distribution</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="chart-container">
+                                    <canvas id="orderStatusChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Activity -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Recent Activity</h3>
+                        </div>
+                        <div class="card-body">
+                            <div id="recentActivity">
+                                <div class="loading"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Customers Page -->
-                <div id="customersPage" class="page">
-                    <div class="page-header">
-                        <h2>Customer List</h2>
-                        <button class="btn btn-primary" onclick="refreshCustomers()">Refresh</button>
-                    </div>
-                    <div id="customersList" class="table-container">
-                        <table class="data-table">
-                            <thead>
-                                <tr>
-                                    <th>Phone</th>
-                                    <th>Name</th>
-                                    <th>Email</th>
-                                    <th>Joined</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="customersTableBody">
-                                <tr>
-                                    <td colspan="5" class="empty-state">Loading...</td>
-                                </tr>
-                            </tbody>
-                        </table>
+                <div id="customersPage" class="page-section">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Customer Management</h3>
+                            <button class="btn btn-primary" onclick="exportCustomers()">
+                                <span>📥</span> Export CSV
+                            </button>
+                        </div>
+                        <div class="card-body">
+                            <!-- Search Bar -->
+                            <div class="search-bar">
+                                <span class="search-icon">🔍</span>
+                                <input type="text" id="customerSearch"
+                                    placeholder="Search customers by name or phone...">
+                            </div>
+
+                            <!-- Customers Table -->
+                            <div class="table-container">
+                                <table id="customersTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Phone</th>
+                                            <th>Orders</th>
+                                            <th>Messages</th>
+                                            <th>Joined</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="customersTableBody">
+                                        <tr>
+                                            <td colspan="6" class="text-center">
+                                                <div class="loading"></div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Broadcast Page -->
-                <div id="broadcastPage" class="page">
-                    <div class="broadcast-form">
-                        <h2>Send Broadcast Message</h2>
-                        <form id="broadcastForm">
-                            <div class="form-group">
-                                <label>Target Audience</label>
-                                <select id="broadcastSegment">
-                                    <option value="all">All Customers</option>
-                                    <option value="recent">Recent Customers (30 days)</option>
-                                    <option value="with_orders">Customers with Orders</option>
+                <!-- Orders Page -->
+                <div id="ordersPage" class="page-section">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Order Management</h3>
+                            <div class="filters">
+                                <select id="orderStatusFilter">
+                                    <option value="">All Statuses</option>
+                                    <option value="pending">Pending</option>
+                                    <option value="confirmed">Confirmed</option>
+                                    <option value="shipped">Shipped</option>
+                                    <option value="delivered">Delivered</option>
+                                    <option value="cancelled">Cancelled</option>
                                 </select>
                             </div>
-                            <div class="form-group">
-                                <label>Message</label>
-                                <textarea id="broadcastMessage" rows="6" placeholder="Enter your message..."
-                                    required></textarea>
-                                <small>Character count: <span id="charCount">0</span></small>
+                        </div>
+                        <div class="card-body">
+                            <!-- Search Bar -->
+                            <div class="search-bar">
+                                <span class="search-icon">🔍</span>
+                                <input type="text" id="orderSearch" placeholder="Search by order ID or customer...">
                             </div>
-                            <button type="submit" class="btn btn-primary">Send Broadcast</button>
-                        </form>
-                        <div id="broadcastStatus" class="status-message"></div>
-                    </div>
-                </div>
 
-                <!-- Offers Page -->
-                <div id="offersPage" class="page">
-                    <div class="offers-form">
-                        <h2>Create & Send Offer</h2>
-                        <form id="offerForm">
-                            <div class="form-group">
-                                <label>Offer Title</label>
-                                <input type="text" id="offerTitle" placeholder="e.g., Summer Sale 50% OFF" required>
+                            <!-- Orders Table -->
+                            <div class="table-container">
+                                <table id="ordersTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Order ID</th>
+                                            <th>Customer</th>
+                                            <th>Status</th>
+                                            <th>AWB</th>
+                                            <th>Date</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="ordersTableBody">
+                                        <tr>
+                                            <td colspan="6" class="text-center">
+                                                <div class="loading"></div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
                             </div>
-                            <div class="form-group">
-                                <label>Description</label>
-                                <textarea id="offerDescription" rows="3" placeholder="Offer details..."></textarea>
-                            </div>
-                            <div class="form-group">
-                                <label>Discount Code (Optional)</label>
-                                <input type="text" id="offerCode" placeholder="e.g., SUMMER50">
-                            </div>
-                            <div class="form-group">
-                                <label>WhatsApp Message</label>
-                                <textarea id="offerMessage" rows="5" placeholder="Message to send to customers..."
-                                    required></textarea>
-                            </div>
-                            <div class="form-group">
-                                <label>Expires At (Optional)</label>
-                                <input type="datetime-local" id="offerExpiry">
-                            </div>
-                            <button type="submit" class="btn btn-primary">Create & Send Offer</button>
-                        </form>
-                        <div id="offerStatus" class="status-message"></div>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Messages Page -->
-                <div id="messagesPage" class="page">
-                    <div class="page-header">
-                        <h2>Message History</h2>
-                        <button class="btn btn-primary" onclick="refreshMessages()">Refresh</button>
+                <div id="messagesPage" class="page-section">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Message History</h3>
+                            <button class="btn btn-primary" onclick="exportMessages()">
+                                <span>📥</span> Export
+                            </button>
+                        </div>
+                        <div class="card-body">
+                            <!-- Filters -->
+                            <div class="filters">
+                                <select id="messageTypeFilter">
+                                    <option value="">All Messages</option>
+                                    <option value="incoming">Incoming</option>
+                                    <option value="outgoing">Outgoing</option>
+                                </select>
+                                <input type="date" id="messageDateFilter">
+                            </div>
+
+                            <!-- Messages Table -->
+                            <div class="table-container">
+                                <table id="messagesTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Time</th>
+                                            <th>Customer</th>
+                                            <th>Type</th>
+                                            <th>Message</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="messagesTableBody">
+                                        <tr>
+                                            <td colspan="4" class="text-center">
+                                                <div class="loading"></div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
-                    <div id="messagesList" class="table-container">
-                        <table class="data-table">
-                            <thead>
-                                <tr>
-                                    <th>Time</th>
-                                    <th>Phone</th>
-                                    <th>Type</th>
-                                    <th>Message</th>
-                                    <th>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody id="messagesTableBody">
-                                <tr>
-                                    <td colspan="5" class="empty-state">Loading...</td>
-                                </tr>
-                            </tbody>
-                        </table>
+                </div>
+
+                <!-- Broadcast Page -->
+                <div id="broadcastPage" class="page-section">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Broadcast Message</h3>
+                        </div>
+                        <div class="card-body">
+                            <form id="broadcastForm">
+                                <div class="form-group">
+                                    <label>Message</label>
+                                    <textarea id="broadcastMessage" placeholder="Enter your broadcast message..."
+                                        required></textarea>
+                                    <p class="text-small text-muted mt-1">
+                                        Tip: Use {{name}} to personalize with customer names
+                                    </p>
+                                </div>
+
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label>Recipients</label>
+                                        <select id="broadcastRecipients">
+                                            <option value="all">All Customers</option>
+                                            <option value="active">Active Customers (Last 7 days)</option>
+                                            <option value="recent">Recent Customers (Last 30 days)</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex justify-between align-center">
+                                    <p class="text-muted">
+                                        <strong id="recipientCount">0</strong> customers will receive this message
+                                    </p>
+                                    <button type="submit" class="btn btn-success">
+                                        <span>📢</span> Send Broadcast
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Broadcast History -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Broadcast History</h3>
+                        </div>
+                        <div class="card-body">
+                            <div id="broadcastHistory">
+                                <div class="loading"></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Analytics Page -->
-                <div id="analyticsPage" class="page">
-                    <h2>Analytics & Insights</h2>
-                    <div class="analytics-grid">
-                        <div class="analytics-card">
-                            <h3>Messages by Type</h3>
-                            <div id="messagesByType" class="chart-placeholder">Loading...</div>
+                <div id="analyticsPage" class="page-section">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Detailed Analytics</h3>
                         </div>
-                        <div class="analytics-card">
-                            <h3>Orders by Status</h3>
-                            <div id="ordersByStatus" class="chart-placeholder">Loading...</div>
-                        </div>
-                        <div class="analytics-card full-width">
-                            <h3>Messages Over Time (Last 7 Days)</h3>
-                            <div id="messagesOverTime" class="chart-placeholder">Loading...</div>
+                        <div class="card-body">
+                            <!-- FAQ Analytics -->
+                            <h4 class="mb-2">Top FAQ Queries</h4>
+                            <div class="chart-container">
+                                <canvas id="faqChart"></canvas>
+                            </div>
+
+                            <!-- Customer Growth -->
+                            <h4 class="mb-2 mt-3">Customer Growth Trend</h4>
+                            <div class="chart-container">
+                                <canvas id="growthChart"></canvas>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -241,6 +395,21 @@
         </main>
     </div>
 
+    <!-- Customer Details Modal -->
+    <div id="customerModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="customerModalTitle">Customer Details</h3>
+                <button class="modal-close" onclick="closeCustomerModal()">×</button>
+            </div>
+            <div class="modal-body" id="customerModalBody">
+                <div class="loading"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0"></script>
     <script src="/dashboard/js/main.js"></script>
 </body>
 
