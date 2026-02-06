@@ -1,18 +1,21 @@
 // Welcome message
 const welcomeMessage = (name = 'there') => `
-👋 Hi ${name}! Welcome to our Order Tracking Bot!
+👋 Hi ${name}! Welcome to *OffComfrt*! 🛍️
 
-I can help you with:
-📦 Check your order status
-📋 View your previous orders
-❓ Get help
+I'm your personal shopping assistant. I can help you with:
+📦 Track your order status
+📋 View your order history  
+🎁 Get exclusive offers
+❓ Get help anytime
 
-Just send me your order ID or choose an option below:
+Just send me your order ID or choose an option:
 1️⃣ Check Order Status
 2️⃣ View Order History
 3️⃣ Help
 
 Type the number or describe what you need!
+
+_Experience comfort, delivered._ ✨
 `.trim();
 
 // Order status message
@@ -106,7 +109,9 @@ Please check:
 • Order ID is correct
 • Order exists in our system
 
-Need help? Type "help" or contact support.
+Need help? Type "help" or contact support@offcomfrt.in
+
+_OffComfrt - We've got you covered._ ✨
 `.trim(),
 
     invalidOrderId: () => `
@@ -126,7 +131,10 @@ Please try again in a moment. If the issue persists, contact our support team.
 `.trim(),
 
     noOrders: () => `
-📋 You don't have any orders yet.
+📋 You don't have any orders with OffComfrt yet.
+
+Ready to experience ultimate comfort? 🛍️
+Visit www.offcomfrt.in to shop now!
 
 Once you place an order, I'll help you track it!
 `.trim()
@@ -134,23 +142,26 @@ Once you place an order, I'll help you track it!
 
 // Help message
 const helpMessage = () => `
-❓ *How can I help you?*
+❓ *OffComfrt Support - How can I help?*
 
 *To check order status:*
-Send your order ID or AWB number
+Send your order ID or AWB tracking number
 
 *To view order history:*
 Type "orders" or "history"
 
 *Available commands:*
 • "status" - Check order status
-• "orders" - View all orders
+• "orders" - View all orders  
 • "help" - Show this message
 
 *Need human support?*
-Contact us at support@example.com
+📧 Email: support@offcomfrt.in
+🌐 Website: www.offcomfrt.in
 
 I'm here 24/7 to help! 🤖
+
+_Your comfort is our priority._ ✨
 `.trim();
 
 // Broadcast/Offer message template
