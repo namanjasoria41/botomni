@@ -46,9 +46,8 @@ function isValidEmail(email) {
 function extractOrderId(message) {
     if (!message) return null;
 
-    // Remove common prefixes
+    // Remove common prefixes but preserve case
     const cleaned = message
-        .toLowerCase()
         .replace(/order\s*(id|number|#)?\s*:?\s*/gi, '')
         .replace(/awb\s*:?\s*/gi, '')
         .trim();
