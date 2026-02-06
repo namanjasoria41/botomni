@@ -173,48 +173,73 @@ Tell me and I'll recommend your size!`;
     async handle(phone, message) {
         const lowerMessage = message.toLowerCase();
 
-        // Main size guide menu
+        // Only handle if message explicitly mentions size-related keywords
+        const isSizeRelated = lowerMessage.includes('size') ||
+            lowerMessage.includes('fit') ||
+            lowerMessage.includes('measure') ||
+            lowerMessage.includes('chest') ||
+            lowerMessage.includes('waist') ||
+            lowerMessage.includes('shirt') ||
+            lowerMessage.includes('jean') ||
+            lowerMessage.includes('trouser') ||
+            lowerMessage.includes('pant') ||
+            lowerMessage.includes('polo');
+
+        // Don't handle if it looks like an order ID
+        const looksLikeOrderID = /^[A-Z]{3,}-\d{4,}/.test(message) ||
+            /^\d{10,}$/.test(message);
+
+        if (looksLikeOrderID) {
+            return false;
+        }
+
+        // Main size guide menu - requires explicit "size guide" or "size"
         if (lowerMessage.includes('size guide') || lowerMessage === 'size') {
             await whatsappService.sendMessage(phone, this.getSizeGuideMenu());
             return true;
         }
 
-        // Category selection
-        if (lowerMessage === '1' || lowerMessage.includes('t-shirt') || lowerMessage.includes('tshirt') || lowerMessage.includes('polo')) {
+        // Only process category selections if size-related
+        if (!isSizeRelated) {
+            return false;
+        }
+
+        // Category selection - only if message contains product keywords
+        if (lowerMessage.includes('t-shirt') || lowerMessage.includes('tshirt') || lowerMessage.includes('polo')) {
             await whatsappService.sendMessage(phone, this.getSizeChart('tshirts'));
             return true;
         }
 
-        if (lowerMessage === '2' || (lowerMessage.includes('shirt') && !lowerMessage.includes('t-shirt'))) {
+        if (lowerMessage.includes('shirt') && !lowerMessage.includes('t-shirt')) {
             await whatsappService.sendMessage(phone, this.getSizeChart('shirts'));
             return true;
         }
 
-        if (lowerMessage === '3' || lowerMessage.includes('jean') || lowerMessage.includes('trouser') || lowerMessage.includes('pant')) {
+        if (lowerMessage.includes('jean') || lowerMessage.includes('trouser') || lowerMessage.includes('pant')) {
             await whatsappService.sendMessage(phone, this.getSizeChart('jeans'));
             return true;
         }
 
-        if (lowerMessage === '4' || lowerMessage.includes('fit guide')) {
+        if (lowerMessage.includes('fit guide')) {
             await whatsappService.sendMessage(phone, this.getFitGuide());
             return true;
         }
 
-        if (lowerMessage === '5' || lowerMessage.includes('how to measure')) {
+        if (lowerMessage.includes('how to measure')) {
             await whatsappService.sendMessage(phone, this.getHowToMeasure());
             return true;
         }
 
-        // Measurement-based recommendation
-        const chestMatch = lowerMessage.match(/(\d+)\s*(inch|"|cm)?\s*(chest)?/);
-        const waistMatch = lowerMessage.match(/(\d+)\s*(inch|"|cm)?\s*(waist)/);
+        // Measurement-based recommendation - only if explicitly mentions "chest" or "waist"
+        const chestMatch = lowerMessage.match(/(\d+)\s*(inch|"|cm)?\s*chest/);
+        const waistMatch = lowerMessage.match(/(\d+)\s*(inch|"|cm)?\s*waist/);
 
         if (chestMatch) {
             const measurement = chestMatch[1];
             const recommendation = this.recommendSize(measurement, 'chest');
 
             if (recommendation) {
-                const response = `✅ *Size Recommendation*\n\nBased on ${measurement}" chest:\n\n*Recommended Size: ${recommendation.size}*\n${recommendation.fit}\n\n💡 ${recommendation.note}\n\n*Want to see the full size chart?*\nType "1" for T-shirts\nType "2" for Shirts`;
+                const response = `✅ *Size Recommendation*\n\nBased on ${measurement}" chest:\n\n*Recommended Size: ${recommendation.size}*\n${recommendation.fit}\n\n💡 ${recommendation.note}\n\n*Want to see the full size chart?*\nType "size guide"`;
                 await whatsappService.sendMessage(phone, response);
                 return true;
             }
@@ -225,7 +250,7 @@ Tell me and I'll recommend your size!`;
             const recommendation = this.recommendSize(measurement, 'waist');
 
             if (recommendation) {
-                const response = `✅ *Size Recommendation*\n\nBased on ${measurement}" waist:\n\n*Recommended Size: ${recommendation.size}*\n\n💡 ${recommendation.note}\n\n*Want to see the full size chart?*\nType "3" for Jeans & Trousers`;
+                const response = `✅ *Size Recommendation*\n\nBased on ${measurement}" waist:\n\n*Recommended Size: ${recommendation.size}*\n\n💡 ${recommendation.note}\n\n*Want to see the full size chart?*\nType "size guide"`;
                 await whatsappService.sendMessage(phone, response);
                 return true;
             }
