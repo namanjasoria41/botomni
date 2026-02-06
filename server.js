@@ -51,17 +51,34 @@ app.post('/webhook', async (req, res) => {
             if (value?.messages) {
                 const message = value.messages[0];
                 const from = message.from; // Phone number
-                const messageBody = message.text?.body;
                 const messageId = message.id;
 
                 // Get sender name if available
                 const senderName = value.contacts?.[0]?.profile?.name;
 
-                console.log(`📨 Message from ${from}: ${messageBody}`);
+                // Handle different message types
+                let messageBody;
 
-                // Process message asynchronously
-                messageHandler.processMessage(from, messageBody, senderName)
-                    .catch(err => console.error('Error processing message:', err));
+                // Check for interactive button response
+                if (message.interactive) {
+                    if (message.interactive.type === 'button_reply') {
+                        const buttonId = message.interactive.button_reply.id;
+                        messageBody = this.handleButtonResponse(buttonId);
+                    } else if (message.interactive.type === 'list_reply') {
+                        const listId = message.interactive.list_reply.id;
+                        messageBody = this.handleButtonResponse(listId);
+                    }
+                } else if (message.text?.body) {
+                    messageBody = message.text.body;
+                }
+
+                if (messageBody) {
+                    console.log(`📨 Message from ${from}: ${messageBody}`);
+
+                    // Process message asynchronously
+                    messageHandler.processMessage(from, messageBody, senderName)
+                        .catch(err => console.error('Error processing message:', err));
+                }
 
                 // Acknowledge receipt immediately
                 res.sendStatus(200);
@@ -76,6 +93,18 @@ app.post('/webhook', async (req, res) => {
         res.sendStatus(500);
     }
 });
+
+// Helper function to convert button IDs to commands
+function handleButtonResponse(buttonId) {
+    const buttonMap = {
+        'track_order': 'status',
+        'order_history': 'history',
+        'get_help': 'help',
+        'contact_support': 'help'
+    };
+
+    return buttonMap[buttonId] || buttonId;
+}
 
 // Health check endpoint
 app.get('/health', (req, res) => {

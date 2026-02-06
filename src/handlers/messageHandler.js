@@ -59,11 +59,33 @@ class MessageHandler {
     async handleCommand(phone, command, senderName) {
         switch (command) {
             case 'welcome':
-                await whatsappService.sendMessage(phone, welcomeMessage(senderName));
+                // Send welcome message with interactive buttons
+                await whatsappService.sendButtonMessage(
+                    phone,
+                    `I'm your personal OffComfrt shopping assistant. I can help you with:\n\n📦 Track your order status\n📋 View your order history  \n🎁 Get exclusive offers\n❓ Get help anytime`,
+                    [
+                        { id: 'track_order', title: '📦 Track Order' },
+                        { id: 'order_history', title: '📋 Order History' },
+                        { id: 'get_help', title: '❓ Help' }
+                    ],
+                    `👋 Hi ${senderName || 'there'}! Welcome to OffComfrt!`,
+                    'Experience comfort, delivered. ✨'
+                );
                 break;
 
             case 'help':
-                await whatsappService.sendMessage(phone, helpMessage());
+                // Send help message with interactive buttons
+                await whatsappService.sendButtonMessage(
+                    phone,
+                    `*To check order status:*\nSend your order ID or AWB tracking number\n\n*To view order history:*\nType "orders" or "history"\n\n*Need human support?*\n📧 support@offcomfrt.in\n🌐 www.offcomfrt.in\n\nI'm here 24/7 to help!`,
+                    [
+                        { id: 'track_order', title: '📦 Track Order' },
+                        { id: 'order_history', title: '📋 My Orders' },
+                        { id: 'contact_support', title: '💬 Contact Support' }
+                    ],
+                    'OffComfrt Support',
+                    'Your comfort is our priority. ✨'
+                );
                 break;
 
             case 'history':

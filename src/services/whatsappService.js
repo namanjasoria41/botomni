@@ -93,6 +93,128 @@ class WhatsAppService {
         }
     }
 
+    // Send interactive button message
+    async sendButtonMessage(to, bodyText, buttons, headerText = null, footerText = null) {
+        try {
+            const cleanPhone = to.replace('whatsapp:', '').replace(/\D/g, '');
+
+            // WhatsApp allows max 3 buttons
+            const buttonArray = buttons.slice(0, 3).map((btn, index) => ({
+                type: 'reply',
+                reply: {
+                    id: btn.id || `btn_${index}`,
+                    title: btn.title.substring(0, 20) // Max 20 chars
+                }
+            }));
+
+            const messageData = {
+                messaging_product: 'whatsapp',
+                recipient_type: 'individual',
+                to: cleanPhone,
+                type: 'interactive',
+                interactive: {
+                    type: 'button',
+                    body: {
+                        text: bodyText
+                    },
+                    action: {
+                        buttons: buttonArray
+                    }
+                }
+            };
+
+            // Add optional header
+            if (headerText) {
+                messageData.interactive.header = {
+                    type: 'text',
+                    text: headerText.substring(0, 60) // Max 60 chars
+                };
+            }
+
+            // Add optional footer
+            if (footerText) {
+                messageData.interactive.footer = {
+                    text: footerText.substring(0, 60) // Max 60 chars
+                };
+            }
+
+            const response = await axios.post(
+                `${this.baseURL}/messages`,
+                messageData,
+                {
+                    headers: {
+                        'Authorization': `Bearer ${this.accessToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
+
+            console.log(`✅ Button message sent to ${cleanPhone}`);
+            return response.data;
+        } catch (error) {
+            console.error('❌ Error sending button message:', error.response?.data || error.message);
+            // Fallback to regular text message
+            return await this.sendMessage(to, bodyText);
+        }
+    }
+
+    // Send interactive list message
+    async sendListMessage(to, bodyText, buttonText, sections, headerText = null, footerText = null) {
+        try {
+            const cleanPhone = to.replace('whatsapp:', '').replace(/\D/g, '');
+
+            const messageData = {
+                messaging_product: 'whatsapp',
+                recipient_type: 'individual',
+                to: cleanPhone,
+                type: 'interactive',
+                interactive: {
+                    type: 'list',
+                    body: {
+                        text: bodyText
+                    },
+                    action: {
+                        button: buttonText.substring(0, 20), // Max 20 chars
+                        sections: sections
+                    }
+                }
+            };
+
+            // Add optional header
+            if (headerText) {
+                messageData.interactive.header = {
+                    type: 'text',
+                    text: headerText.substring(0, 60)
+                };
+            }
+
+            // Add optional footer
+            if (footerText) {
+                messageData.interactive.footer = {
+                    text: footerText.substring(0, 60)
+                };
+            }
+
+            const response = await axios.post(
+                `${this.baseURL}/messages`,
+                messageData,
+                {
+                    headers: {
+                        'Authorization': `Bearer ${this.accessToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
+
+            console.log(`✅ List message sent to ${cleanPhone}`);
+            return response.data;
+        } catch (error) {
+            console.error('❌ Error sending list message:', error.response?.data || error.message);
+            // Fallback to regular text message
+            return await this.sendMessage(to, bodyText);
+        }
+    }
+
     // Format phone number for WhatsApp
     formatPhoneNumber(phone) {
         // Remove all non-digit characters
