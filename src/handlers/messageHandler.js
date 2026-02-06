@@ -1,6 +1,8 @@
 const whatsappService = require('../services/whatsappService');
 const orderStatusHandler = require('./orderStatusHandler');
 const orderHistoryHandler = require('./orderHistoryHandler');
+const faqHandler = require('./faqHandler');
+const sizeGuideHandler = require('./sizeGuideHandler');
 const Customer = require('../models/Customer');
 const { supabase } = require('../database/db');
 const {
@@ -35,6 +37,14 @@ class MessageHandler {
                 await this.handleCommand(phone, command, senderName);
                 return;
             }
+
+            // Check for size guide queries (high priority)
+            const sizeGuideHandled = await sizeGuideHandler.handle(phone, cleanMessage);
+            if (sizeGuideHandled) return;
+
+            // Check for FAQ queries
+            const faqHandled = await faqHandler.handle(phone, cleanMessage);
+            if (faqHandled) return;
 
             // Check if message contains an order ID
             const orderId = extractOrderId(cleanMessage);
