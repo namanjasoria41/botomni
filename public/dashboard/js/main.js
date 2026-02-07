@@ -136,6 +136,7 @@ function navigateTo(page) {
         overview: 'Overview',
         customers: 'Customer Management',
         orders: 'Order Management',
+        returns: 'Returns & Exchanges',
         messages: 'Message History',
         broadcast: 'Broadcast Messages',
         analytics: 'Detailed Analytics'
@@ -145,6 +146,7 @@ function navigateTo(page) {
         overview: 'WhatsApp Bot Performance Dashboard',
         customers: 'Manage and view customer information',
         orders: 'Track and manage all orders',
+        returns: 'Manage returns and exchange requests',
         messages: 'View conversation history',
         broadcast: 'Send messages to customers',
         analytics: 'In-depth performance metrics'
@@ -174,6 +176,9 @@ async function loadPageData(page) {
             break;
         case 'orders':
             await loadOrders();
+            break;
+        case 'returns':
+            await loadReturnsData();
             break;
         case 'messages':
             await loadMessages();
@@ -839,11 +844,6 @@ function formatPhone(phone) {
     return phone.replace(/(\d{2})(\d{5})(\d{5})/, '+$1 $2-$3');
 }
 
-function truncate(str, length) {
-    if (!str) return '';
-    return str.length > length ? str.substring(0, length) + '...' : str;
-}
-
 function getStatusBadge(status) {
     const badges = {
         pending: '<span class="badge badge-warning">Pending</span>',
@@ -854,3 +854,259 @@ function getStatusBadge(status) {
     };
     return badges[status] || `<span class="badge badge-gray">${status}</span>`;
 }
+
+// ===================================
+// Returns & Exchanges Functions
+// ===================================
+
+async function loadReturnsData() {
+    try {
+        const [returnsRes, exchangesRes] = await Promise.all([
+            fetch(`${API_BASE}/returns`, {
+                headers: { 'Authorization': `Bearer ${authToken}` }
+            }),
+            fetch(`${API_BASE}/exchanges`, {
+                headers: { 'Authorization': `Bearer ${authToken}` }
+            })
+        ]);
+
+        const returnsData = await returnsRes.json();
+        const exchangesData = await exchangesRes.json();
+
+        if (returnsData.success) {
+            window.allReturns = returnsData.returns || [];
+            displayReturns(window.allReturns);
+        }
+
+        if (exchangesData.success) {
+            window.allExchanges = exchangesData.exchanges || [];
+            displayExchanges(window.allExchanges);
+        }
+    } catch (error) {
+        console.error('Error loading returns/exchanges:', error);
+    }
+}
+
+function displayReturns(returns) {
+    const tbody = document.getElementById('returnsTableBody');
+    if (!tbody) return;
+
+    if (returns.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="9" class="text-center">No returns found</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = returns.map(ret => `
+        <tr>
+            <td><strong>${ret.return_id}</strong></td>
+            <td>${ret.order_id}</td>
+            <td>${ret.customer_phone}</td>
+            <td>${ret.reason}</td>
+            <td>${getReturnStatusBadge(ret.status)}</td>
+            <td>₹${ret.refund_amount || 0}</td>
+            <td>${getRefundStatusBadge(ret.refund_status)}</td>
+            <td>${formatDate(ret.created_at)}</td>
+            <td>
+                <button class="btn btn-sm btn-primary" onclick="viewReturnDetails('${ret.return_id}')">
+                    View
+                </button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+function displayExchanges(exchanges) {
+    const tbody = document.getElementById('exchangesTableBody');
+    if (!tbody) return;
+
+    if (exchanges.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="9" class="text-center">No exchanges found</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = exchanges.map(exc => `
+        <tr>
+            <td><strong>${exc.exchange_id}</strong></td>
+            <td>${exc.order_id}</td>
+            <td>${exc.customer_phone}</td>
+            <td>${exc.reason}</td>
+            <td class="${exc.price_difference >= 0 ? 'text-success' : 'text-danger'}">
+                ${exc.price_difference >= 0 ? '+' : ''}₹${exc.price_difference || 0}
+            </td>
+            <td>${getPaymentStatusBadge(exc.payment_status)}</td>
+            <td>${getExchangeStatusBadge(exc.status)}</td>
+            <td>${formatDate(exc.created_at)}</td>
+            <td>
+                <button class="btn btn-sm btn-primary" onclick="viewExchangeDetails('${exc.exchange_id}')">
+                    View
+                </button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+function getReturnStatusBadge(status) {
+    const badges = {
+        'initiated': '<span class="badge badge-info">Initiated</span>',
+        'pickup_scheduled': '<span class="badge badge-warning">Pickup Scheduled</span>',
+        'picked_up': '<span class="badge badge-primary">Picked Up</span>',
+        'delivered_to_warehouse': '<span class="badge badge-info">At Warehouse</span>',
+        'qc_passed': '<span class="badge badge-success">QC Passed</span>',
+        'qc_failed': '<span class="badge badge-danger">QC Failed</span>',
+        'refund_processed': '<span class="badge badge-success">Refund Processed</span>',
+        'completed': '<span class="badge badge-success">Completed</span>'
+    };
+    return badges[status] || `<span class="badge badge-gray">${status}</span>`;
+}
+
+function getExchangeStatusBadge(status) {
+    const badges = {
+        'initiated': '<span class="badge badge-info">Initiated</span>',
+        'payment_pending': '<span class="badge badge-warning">Payment Pending</span>',
+        'payment_completed': '<span class="badge badge-success">Payment Completed</span>',
+        'pickup_scheduled': '<span class="badge badge-warning">Pickup Scheduled</span>',
+        'picked_up': '<span class="badge badge-primary">Picked Up</span>',
+        'qc_passed': '<span class="badge badge-success">QC Passed</span>',
+        'qc_failed': '<span class="badge badge-danger">QC Failed</span>',
+        'new_order_created': '<span class="badge badge-primary">New Order Created</span>',
+        'completed': '<span class="badge badge-success">Completed</span>'
+    };
+    return badges[status] || `<span class="badge badge-gray">${status}</span>`;
+}
+
+function getRefundStatusBadge(status) {
+    const badges = {
+        'pending': '<span class="badge badge-warning">Pending</span>',
+        'processing': '<span class="badge badge-info">Processing</span>',
+        'completed': '<span class="badge badge-success">Completed</span>',
+        'failed': '<span class="badge badge-danger">Failed</span>'
+    };
+    return badges[status] || `<span class="badge badge-gray">${status}</span>`;
+}
+
+function getPaymentStatusBadge(status) {
+    const badges = {
+        'pending': '<span class="badge badge-warning">Pending</span>',
+        'completed': '<span class="badge badge-success">Completed</span>',
+        'failed': '<span class="badge badge-danger">Failed</span>',
+        'not_required': '<span class="badge badge-gray">Not Required</span>'
+    };
+    return badges[status] || `<span class="badge badge-gray">${status}</span>`;
+}
+
+function filterReturns() {
+    const statusFilter = document.getElementById('returnStatusFilter')?.value || '';
+    const searchTerm = document.getElementById('returnSearch')?.value.toLowerCase() || '';
+
+    const filtered = (window.allReturns || []).filter(ret => {
+        const matchesStatus = !statusFilter || ret.status === statusFilter;
+        const matchesSearch = !searchTerm ||
+            ret.return_id.toLowerCase().includes(searchTerm) ||
+            ret.order_id.toLowerCase().includes(searchTerm) ||
+            ret.customer_phone.includes(searchTerm);
+        return matchesStatus && matchesSearch;
+    });
+
+    displayReturns(filtered);
+}
+
+function filterExchanges() {
+    const statusFilter = document.getElementById('exchangeStatusFilter')?.value || '';
+    const searchTerm = document.getElementById('exchangeSearch')?.value.toLowerCase() || '';
+
+    const filtered = (window.allExchanges || []).filter(exc => {
+        const matchesStatus = !statusFilter || exc.status === statusFilter;
+        const matchesSearch = !searchTerm ||
+            exc.exchange_id.toLowerCase().includes(searchTerm) ||
+            exc.order_id.toLowerCase().includes(searchTerm) ||
+            exc.customer_phone.includes(searchTerm);
+        return matchesStatus && matchesSearch;
+    });
+
+    displayExchanges(filtered);
+}
+
+function refreshReturnsData() {
+    loadReturnsData();
+}
+
+function viewReturnDetails(returnId) {
+    alert(`View details for return: ${returnId}\n\nFull details modal coming soon!`);
+}
+
+function viewExchangeDetails(exchangeId) {
+    alert(`View details for exchange: ${exchangeId}\n\nFull details modal coming soon!`);
+}
+
+function exportReturns() {
+    const returns = window.allReturns || [];
+    if (returns.length === 0) {
+        alert('No returns to export');
+        return;
+    }
+
+    const csv = [
+        ['Return ID', 'Order ID', 'Customer', 'Reason', 'Status', 'Refund Amount', 'Refund Status', 'Date'],
+        ...returns.map(r => [
+            r.return_id,
+            r.order_id,
+            r.customer_phone,
+            r.reason,
+            r.status,
+            r.refund_amount || 0,
+            r.refund_status,
+            formatDate(r.created_at)
+        ])
+    ].map(row => row.join(',')).join('\n');
+
+    downloadCSV(csv, 'returns.csv');
+}
+
+function exportExchanges() {
+    const exchanges = window.allExchanges || [];
+    if (exchanges.length === 0) {
+        alert('No exchanges to export');
+        return;
+    }
+
+    const csv = [
+        ['Exchange ID', 'Order ID', 'Customer', 'Reason', 'Price Diff', 'Payment Status', 'Status', 'Date'],
+        ...exchanges.map(e => [
+            e.exchange_id,
+            e.order_id,
+            e.customer_phone,
+            e.reason,
+            e.price_difference || 0,
+            e.payment_status,
+            e.status,
+            formatDate(e.created_at)
+        ])
+    ].map(row => row.join(',')).join('\n');
+
+    downloadCSV(csv, 'exchanges.csv');
+}
+
+// Setup tab switching
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const tabId = btn.dataset.tab;
+
+            // Update active tab button
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            // Update active tab content
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(tabId)?.classList.add('active');
+        });
+    });
+
+    // Setup filters
+    document.getElementById('returnStatusFilter')?.addEventListener('change', filterReturns);
+    document.getElementById('returnSearch')?.addEventListener('input', filterReturns);
+    document.getElementById('exchangeStatusFilter')?.addEventListener('change', filterExchanges);
+    document.getElementById('exchangeSearch')?.addEventListener('input', filterExchanges);
+});

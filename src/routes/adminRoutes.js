@@ -555,4 +555,48 @@ function processMessagesOverTime(messages) {
     return last7Days;
 }
 
+// ===================================
+// Returns & Exchanges Endpoints
+// ===================================
+
+// Get all returns
+router.get('/returns', verifyToken, async (req, res) => {
+    try {
+        const { data: returns, error } = await supabase
+            .from('returns')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        res.json({
+            success: true,
+            returns: returns || []
+        });
+    } catch (error) {
+        console.error('Error fetching returns:', error);
+        res.status(500).json({ error: 'Failed to fetch returns' });
+    }
+});
+
+// Get all exchanges
+router.get('/exchanges', verifyToken, async (req, res) => {
+    try {
+        const { data: exchanges, error } = await supabase
+            .from('exchanges')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        res.json({
+            success: true,
+            exchanges: exchanges || []
+        });
+    } catch (error) {
+        console.error('Error fetching exchanges:', error);
+        res.status(500).json({ error: 'Failed to fetch exchanges' });
+    }
+});
+
 module.exports = router;

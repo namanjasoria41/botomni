@@ -51,6 +51,9 @@
                 <a href="#" class="nav-item" data-page="orders">
                     <span>📦</span> Orders
                 </a>
+                <a href="#" class="nav-item" data-page="returns">
+                    <span>🔄</span> Returns & Exchanges
+                </a>
                 <a href="#" class="nav-item" data-page="messages">
                     <span>💬</span> Messages
                 </a>
@@ -268,6 +271,135 @@
                                         </tr>
                                     </tbody>
                                 </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Returns & Exchanges Page -->
+                <div id="returnsPage" class="page-section">
+                    <div class="page-header">
+                        <h2>Returns & Exchanges</h2>
+                        <button class="btn btn-primary" onclick="refreshReturnsData()">
+                            <span>🔄</span> Refresh
+                        </button>
+                    </div>
+
+                    <!-- Tabs -->
+                    <div class="tabs">
+                        <button class="tab-btn active" data-tab="returns-tab">Returns</button>
+                        <button class="tab-btn" data-tab="exchanges-tab">Exchanges</button>
+                    </div>
+
+                    <!-- Returns Tab -->
+                    <div id="returns-tab" class="tab-content active">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">Return Requests</h3>
+                                <button class="btn btn-primary" onclick="exportReturns()">
+                                    <span>📥</span> Export
+                                </button>
+                            </div>
+                            <div class="card-body">
+                                <!-- Filters -->
+                                <div class="filters">
+                                    <select id="returnStatusFilter">
+                                        <option value="">All Status</option>
+                                        <option value="initiated">Initiated</option>
+                                        <option value="pickup_scheduled">Pickup Scheduled</option>
+                                        <option value="picked_up">Picked Up</option>
+                                        <option value="delivered_to_warehouse">At Warehouse</option>
+                                        <option value="qc_passed">QC Passed</option>
+                                        <option value="qc_failed">QC Failed</option>
+                                        <option value="refund_processed">Refund Processed</option>
+                                        <option value="completed">Completed</option>
+                                    </select>
+                                    <input type="text" id="returnSearch"
+                                        placeholder="Search by return ID or order ID...">
+                                </div>
+
+                                <!-- Returns Table -->
+                                <div class="table-container">
+                                    <table id="returnsTable">
+                                        <thead>
+                                            <tr>
+                                                <th>Return ID</th>
+                                                <th>Order ID</th>
+                                                <th>Customer</th>
+                                                <th>Reason</th>
+                                                <th>Status</th>
+                                                <th>Refund Amount</th>
+                                                <th>Refund Status</th>
+                                                <th>Date</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="returnsTableBody">
+                                            <tr>
+                                                <td colspan="9" class="text-center">
+                                                    <div class="loading"></div>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Exchanges Tab -->
+                    <div id="exchanges-tab" class="tab-content">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">Exchange Requests</h3>
+                                <button class="btn btn-primary" onclick="exportExchanges()">
+                                    <span>📥</span> Export
+                                </button>
+                            </div>
+                            <div class="card-body">
+                                <!-- Filters -->
+                                <div class="filters">
+                                    <select id="exchangeStatusFilter">
+                                        <option value="">All Status</option>
+                                        <option value="initiated">Initiated</option>
+                                        <option value="payment_pending">Payment Pending</option>
+                                        <option value="payment_completed">Payment Completed</option>
+                                        <option value="pickup_scheduled">Pickup Scheduled</option>
+                                        <option value="picked_up">Picked Up</option>
+                                        <option value="qc_passed">QC Passed</option>
+                                        <option value="qc_failed">QC Failed</option>
+                                        <option value="new_order_created">New Order Created</option>
+                                        <option value="completed">Completed</option>
+                                    </select>
+                                    <input type="text" id="exchangeSearch"
+                                        placeholder="Search by exchange ID or order ID...">
+                                </div>
+
+                                <!-- Exchanges Table -->
+                                <div class="table-container">
+                                    <table id="exchangesTable">
+                                        <thead>
+                                            <tr>
+                                                <th>Exchange ID</th>
+                                                <th>Order ID</th>
+                                                <th>Customer</th>
+                                                <th>Reason</th>
+                                                <th>Price Diff</th>
+                                                <th>Payment Status</th>
+                                                <th>Status</th>
+                                                <th>Date</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="exchangesTableBody">
+                                            <tr>
+                                                <td colspan="9" class="text-center">
+                                                    <div class="loading"></div>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
                     </div>
