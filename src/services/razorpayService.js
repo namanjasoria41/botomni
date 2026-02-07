@@ -2,16 +2,38 @@ const Razorpay = require('razorpay');
 
 class RazorpayService {
     constructor() {
-        this.razorpay = new Razorpay({
-            key_id: process.env.RAZORPAY_KEY_ID,
-            key_secret: process.env.RAZORPAY_KEY_SECRET
-        });
+        // Only initialize Razorpay if keys are provided
+        if (process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET) {
+            this.razorpay = new Razorpay({
+                key_id: process.env.RAZORPAY_KEY_ID,
+                key_secret: process.env.RAZORPAY_KEY_SECRET
+            });
+            this.enabled = true;
+            console.log('✅ Razorpay service initialized');
+        } else {
+            this.enabled = false;
+            console.log('⚠️  Razorpay not configured - payment features disabled');
+        }
+    }
+
+    /**
+     * Check if Razorpay is enabled
+     */
+    isEnabled() {
+        return this.enabled;
     }
 
     /**
      * Create a payment link for exchange balance
      */
     async createPaymentLink(amount, orderId, customerDetails) {
+        if (!this.enabled) {
+            return {
+                success: false,
+                error: 'Razorpay not configured. Please add RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET to environment variables.'
+            };
+        }
+
         try {
             const paymentLink = await this.razorpay.paymentLink.create({
                 amount: amount * 100, // Convert to paise
@@ -56,6 +78,9 @@ class RazorpayService {
      * Get payment link status
      */
     async getPaymentStatus(paymentLinkId) {
+        if (!this.enabled) {
+            return { success: false, error: 'Razorpay not configured' };
+        }
         try {
             const paymentLink = await this.razorpay.paymentLink.fetch(paymentLinkId);
 
@@ -78,6 +103,9 @@ class RazorpayService {
      * Process refund for returns
      */
     async processRefund(paymentId, amount, notes = {}) {
+        if (!this.enabled) {
+            return { success: false, error: 'Razorpay not configured' };
+        }
         try {
             const refund = await this.razorpay.payments.refund(paymentId, {
                 amount: amount * 100, // Convert to paise
@@ -122,6 +150,9 @@ class RazorpayService {
      * Get payment details
      */
     async getPaymentDetails(paymentId) {
+        if (!this.enabled) {
+            return { success: false, error: 'Razorpay not configured' };
+        }
         try {
             const payment = await this.razorpay.payments.fetch(paymentId);
 
@@ -149,6 +180,9 @@ class RazorpayService {
      * Cancel payment link
      */
     async cancelPaymentLink(paymentLinkId) {
+        if (!this.enabled) {
+            return { success: false, error: 'Razorpay not configured' };
+        }
         try {
             const paymentLink = await this.razorpay.paymentLink.cancel(paymentLinkId);
 
