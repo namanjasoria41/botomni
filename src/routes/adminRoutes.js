@@ -248,6 +248,27 @@ router.get('/orders', verifyToken, async (req, res) => {
     }
 });
 
+// Get messages
+router.get('/messages', verifyToken, async (req, res) => {
+    try {
+        const { data: messages, error } = await supabase
+            .from('messages')
+            .select('*')
+            .order('created_at', { ascending: false })
+            .limit(500);
+
+        if (error) throw error;
+
+        res.json({
+            success: true,
+            messages: messages || []
+        });
+    } catch (error) {
+        console.error('Messages error:', error);
+        res.status(500).json({ error: 'Failed to fetch messages' });
+    }
+});
+
 // Send broadcast
 router.post('/broadcast/send', verifyToken, async (req, res) => {
     try {
