@@ -3,6 +3,7 @@ const orderStatusHandler = require('./orderStatusHandler');
 const orderHistoryHandler = require('./orderHistoryHandler');
 const faqHandler = require('./faqHandler');
 const sizeGuideHandler = require('./sizeGuideHandler');
+const returnExchangeHandler = require('./returnExchangeHandler');
 const Customer = require('../models/Customer');
 const { supabase } = require('../database/db');
 const {
@@ -41,6 +42,10 @@ class MessageHandler {
             // Check for size guide queries (high priority)
             const sizeGuideHandled = await sizeGuideHandler.handle(phone, cleanMessage);
             if (sizeGuideHandled) return;
+
+            // Check for return/exchange requests
+            const returnExchangeHandled = await returnExchangeHandler.handle(phone, cleanMessage);
+            if (returnExchangeHandled) return;
 
             // Check for FAQ queries
             const faqHandled = await faqHandler.handle(phone, cleanMessage);

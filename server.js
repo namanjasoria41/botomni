@@ -21,6 +21,10 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Admin API routes
 app.use('/api/admin', adminRoutes);
 
+// Payment and return webhook routes (specific paths to avoid conflict)
+const paymentWebhookRoutes = require('./src/routes/paymentWebhookRoutes');
+app.use(paymentWebhookRoutes);
+
 // WhatsApp webhook verification (Meta Cloud API)
 app.get('/webhook', (req, res) => {
     const mode = req.query['hub.mode'];

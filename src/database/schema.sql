@@ -70,9 +70,49 @@ CREATE TABLE IF NOT EXISTS offers (
     expires_at TIMESTAMP
 );
 
+-- Returns table
+CREATE TABLE IF NOT EXISTS returns (
+    id SERIAL PRIMARY KEY,
+    return_id VARCHAR(100) UNIQUE NOT NULL,
+    order_id VARCHAR(100) REFERENCES orders(order_id),
+    customer_phone VARCHAR(20) REFERENCES customers(phone),
+    items JSONB NOT NULL,
+    reason VARCHAR(100) NOT NULL,
+    status VARCHAR(50) DEFAULT 'initiated',
+    shiprocket_return_id VARCHAR(100),
+    pickup_scheduled_date DATE,
+    refund_amount DECIMAL(10, 2),
+    refund_status VARCHAR(50) DEFAULT 'pending',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Exchanges table
+CREATE TABLE IF NOT EXISTS exchanges (
+    id SERIAL PRIMARY KEY,
+    exchange_id VARCHAR(100) UNIQUE NOT NULL,
+    order_id VARCHAR(100) REFERENCES orders(order_id),
+    customer_phone VARCHAR(20) REFERENCES customers(phone),
+    old_items JSONB NOT NULL,
+    new_items JSONB NOT NULL,
+    reason VARCHAR(100) NOT NULL,
+    price_difference DECIMAL(10, 2),
+    payment_link_id VARCHAR(100),
+    payment_status VARCHAR(50) DEFAULT 'pending',
+    status VARCHAR(50) DEFAULT 'initiated',
+    shiprocket_exchange_id VARCHAR(100),
+    pickup_scheduled_date DATE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Create indexes for better performance
 CREATE INDEX IF NOT EXISTS idx_customers_phone ON customers(phone);
 CREATE INDEX IF NOT EXISTS idx_orders_customer_phone ON orders(customer_phone);
 CREATE INDEX IF NOT EXISTS idx_orders_order_id ON orders(order_id);
 CREATE INDEX IF NOT EXISTS idx_messages_customer_phone ON messages(customer_phone);
 CREATE INDEX IF NOT EXISTS idx_messages_created_at ON messages(created_at);
+CREATE INDEX IF NOT EXISTS idx_returns_order_id ON returns(order_id);
+CREATE INDEX IF NOT EXISTS idx_returns_customer_phone ON returns(customer_phone);
+CREATE INDEX IF NOT EXISTS idx_exchanges_order_id ON exchanges(order_id);
+CREATE INDEX IF NOT EXISTS idx_exchanges_customer_phone ON exchanges(customer_phone);
